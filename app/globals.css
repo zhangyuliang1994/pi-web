@@ -6,6 +6,11 @@
    node_modules, which crashes `next build` with "reading 'length'". */
 @source not "../.claude";
 
+/* Personal OS Safe Area Utility */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
 @theme {
   --color-bg: var(--bg);
   --color-bg-panel: var(--bg-panel);
