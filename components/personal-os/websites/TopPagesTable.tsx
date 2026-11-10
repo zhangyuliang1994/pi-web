@@ -30,7 +30,7 @@ export function TopPagesTable({ domain, pages, dateRange }: TopPagesTableProps) 
     exportToCsv(filename, headers, rows);
   };
 
-  const handleAskAi = (_path: string) => {
+  const handleAskAi = () => {
     router.push("/");
   };
 
@@ -97,7 +97,7 @@ export function TopPagesTable({ domain, pages, dateRange }: TopPagesTableProps) 
                 <td className="py-3 px-4 text-center">
                   <button
                     type="button"
-                    onClick={() => handleAskAi(page.path)}
+                    onClick={handleAskAi}
                     className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline font-medium text-xs font-sans"
                   >
                     <BotIcon size={12} />

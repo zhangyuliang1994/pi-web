@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { PersonalOsRail } from "./personal-os/ai-assistant/PersonalOsRail";
+import { AgentEnvironmentDrawer } from "./personal-os/ai-assistant/AgentEnvironmentDrawer";
 import { SessionSidebar, type SelectSessionOptions, type SessionSidebarControl } from "./SessionSidebar";
 import { ChatWindow } from "./ChatWindow";
 import { NewSessionContextBar, type NewSessionContextControl } from "./NewSessionContextBar";
@@ -129,6 +132,7 @@ export function AppShell() {
   // is not mounted. ChatWindow receives the audio callbacks as props.
   const { soundEnabled, onSoundToggle, playDoneSound, unlockAudio, holdAudio, soundEnabledRef } = useAudio();
   const [quoteSelectionEnabled, setQuoteSelectionEnabled] = useState(false);
+  const [personalOsEnvOpen, setPersonalOsEnvOpen] = useState(false);
   useEffect(() => {
     try {
       setQuoteSelectionEnabled(localStorage.getItem("pi-quote-selection-enabled") === "true");
@@ -2231,6 +2235,9 @@ export function AppShell() {
       overflow: "hidden",
       background: "var(--bg)",
     }}>
+      {/* Personal OS 60px Icon Rail (Desktop) */}
+      <PersonalOsRail onOpenEnvironment={() => setPersonalOsEnvOpen(true)} />
+
       {/* Mobile overlay backdrop */}
       <div
         className={`sidebar-overlay-backdrop${mobileSidebarReady ? "" : " sidebar-mobile-pending"}`}
@@ -2305,6 +2312,30 @@ export function AppShell() {
               </svg>
             )}
           </button>
+          {isMobile && (
+            <Link
+              href="/dashboard"
+              title="Personal OS Dashboard"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "0 8px",
+                fontSize: 11,
+                fontWeight: 600,
+                color: "var(--accent)",
+                textDecoration: "none",
+                borderRight: "1px solid var(--border)",
+                height: "100%",
+                flexShrink: 0,
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
+              </svg>
+              <span>OS</span>
+            </Link>
+          )}
           {isMobile && (
             <div
               ref={mobileToolbarRef}
@@ -2883,6 +2914,16 @@ export function AppShell() {
         </div>
       </div>
     </div>
+    <AgentEnvironmentDrawer
+      isOpen={personalOsEnvOpen}
+      onClose={() => setPersonalOsEnvOpen(false)}
+      sessionId={selectedSession?.id}
+      sessionTitle={selectedSession?.name || selectedSession?.firstMessage || "New Agent Conversation"}
+      cwd={activeCwd}
+      modelId={carriedNewSessionChoices?.model?.modelId ?? null}
+      thinkingLevel={carriedNewSessionChoices?.thinkingLevel ?? null}
+      onOpenSettings={() => setSettingsSection("models")}
+    />
     {settingsSection && (
       <SettingsPanel
         cwd={projectTrustCwd}
