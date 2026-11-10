@@ -26,6 +26,7 @@
 *.pem
 /.agents/
 /skills-lock.json
+pnpm-lock.yaml
 
 # debug
 npm-debug.log*

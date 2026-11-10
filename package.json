@@ -98,5 +98,13 @@
     "remark-math": "^6.0.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^5"
+  },
+  "overrides": {
+    "mdast-util-gfm-autolink-literal": "2.0.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "mdast-util-gfm-autolink-literal": "2.0.1"
+    }
   }
 }
