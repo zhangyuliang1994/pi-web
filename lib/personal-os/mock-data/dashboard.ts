@@ -1,13 +1,13 @@
 import type { DashboardWidgetConfig, BriefingData, ScheduleEvent } from "../models/dashboard";
 
 export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidgetConfig[] = [
-  { id: "briefing", label: "AI Daily Briefing", enabled: true, order: 1 },
-  { id: "overview", label: "Daily Overview Stats", enabled: true, order: 2 },
-  { id: "schedule", label: "Today's Schedule", enabled: true, order: 3 },
+  { id: "quick_capture", label: "Quick Capture Bar", enabled: true, order: 1 },
+  { id: "briefing", label: "AI Daily Briefing", enabled: true, order: 2 },
+  { id: "overview", label: "Daily Overview Stats", enabled: true, order: 3 },
   { id: "tasks", label: "My Priority Tasks", enabled: true, order: 4 },
   { id: "projects", label: "Active Projects", enabled: true, order: 5 },
   { id: "websites", label: "Website Performance Snapshot", enabled: true, order: 6 },
-  { id: "quick_capture", label: "Quick Capture Bar", enabled: true, order: 7 },
+  { id: "schedule", label: "Today's Schedule", enabled: true, order: 7 },
 ];
 
 export const INITIAL_BRIEFING: BriefingData = {

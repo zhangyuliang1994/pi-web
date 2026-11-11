@@ -19,12 +19,33 @@ export function ProjectCard({
   onViewDetails,
 }: ProjectCardProps) {
   const router = useRouter();
+  const [validating, setValidating] = React.useState(false);
 
-  const handleOpenAgent = () => {
-    if (project.cwd) {
-      router.push(`/?cwd=${encodeURIComponent(project.cwd)}`);
-    } else {
+  const handleOpenAgent = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!project.cwd) {
       router.push("/");
+      return;
+    }
+    setValidating(true);
+    try {
+      const res = await fetch("/api/cwd/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cwd: project.cwd }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        // CWD invalid: open details drawer so user can inspect and edit the invalid path
+        onViewDetails(project);
+        setValidating(false);
+        return;
+      }
+      router.push(`/?cwd=${encodeURIComponent(data.cwd)}`);
+    } catch {
+      onViewDetails(project);
+    } finally {
+      setValidating(false);
     }
   };
 
@@ -82,11 +103,12 @@ export function ProjectCard({
             </button>
             <button
               type="button"
+              disabled={validating}
               onClick={handleOpenAgent}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#4338CA] dark:bg-[#6366F1] text-white text-xs font-medium hover:opacity-95 shadow-2xs transition-opacity"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#4338CA] dark:bg-[#6366F1] text-white text-xs font-medium hover:opacity-95 shadow-2xs transition-opacity disabled:opacity-50"
             >
               <BotIcon size={14} />
-              <span>Open Agent</span>
+              <span>{validating ? "Validating..." : "Open Agent"}</span>
             </button>
           </div>
         </div>

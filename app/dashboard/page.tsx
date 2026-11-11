@@ -65,14 +65,63 @@ export default function DashboardPage() {
     setWidgets(res);
   };
 
-  const isWidgetEnabled = (id: string) => {
-    const w = widgets.find((item) => item.id === id);
-    return w ? w.enabled : true;
-  };
-
   const pendingTasks = tasks.filter((t) => !t.completed);
   const urgentTasks = pendingTasks.filter((t) => t.priority === 1);
   const activeProjects = projects.filter((p) => p.status === "active");
+
+  const renderWidget = (id: string) => {
+    switch (id) {
+      case "quick_capture":
+        return <QuickCapture key="quick_capture" onTaskCreated={loadData} />;
+      case "briefing":
+        return <AiDailyBriefing key="briefing" initialData={briefing} />;
+      case "overview":
+        return (
+          <DailyOverview
+            key="overview"
+            eventsCount={INITIAL_SCHEDULE.length}
+            pendingTasksCount={pendingTasks.length}
+            urgentTasksCount={urgentTasks.length}
+            activeProjectsCount={activeProjects.length}
+          />
+        );
+      case "tasks":
+        return (
+          <DashboardTasks
+            key="tasks"
+            tasks={pendingTasks}
+            onToggleComplete={handleToggleTask}
+          />
+        );
+      case "projects":
+        return <ActiveProjects key="projects" projects={projects} />;
+      case "websites":
+        return INITIAL_WEBSITES[0] ? (
+          <WebsitePerformance key="websites" site={INITIAL_WEBSITES[0]} />
+        ) : null;
+      case "schedule":
+        return <TodaySchedule key="schedule" initialEvents={INITIAL_SCHEDULE} />;
+      default:
+        return null;
+    }
+  };
+
+  // Group widgets into Top (Full width) and Main Grid according to Stitch design
+  const topWidgetIds = ["quick_capture", "briefing", "overview"];
+  const mainColumnIds = ["tasks", "projects", "websites"];
+  const sideColumnIds = ["schedule"];
+
+  const enabledTopWidgets = widgets
+    .filter((w) => w.enabled && topWidgetIds.includes(w.id))
+    .sort((a, b) => a.order - b.order);
+
+  const enabledMainWidgets = widgets
+    .filter((w) => w.enabled && mainColumnIds.includes(w.id))
+    .sort((a, b) => a.order - b.order);
+
+  const enabledSideWidgets = widgets
+    .filter((w) => w.enabled && sideColumnIds.includes(w.id))
+    .sort((a, b) => a.order - b.order);
 
   return (
     <PersonalOsLayout>
@@ -84,55 +133,19 @@ export default function DashboardPage() {
           onCustomizeClick={() => setCustomizeOpen(true)}
         />
 
-        {/* Quick Capture Bar */}
-        {isWidgetEnabled("quick_capture") && (
-          <QuickCapture onTaskCreated={loadData} />
-        )}
-
-        {/* AI Daily Briefing */}
-        {isWidgetEnabled("briefing") && (
-          <AiDailyBriefing initialData={briefing} />
-        )}
-
-        {/* Daily Overview Stats */}
-        {isWidgetEnabled("overview") && (
-          <DailyOverview
-            eventsCount={INITIAL_SCHEDULE.length}
-            pendingTasksCount={pendingTasks.length}
-            urgentTasksCount={urgentTasks.length}
-            activeProjectsCount={activeProjects.length}
-          />
-        )}
+        {/* Dynamic Top Widgets (Rendered strictly in user's sorted order) */}
+        {enabledTopWidgets.map((w) => renderWidget(w.id))}
 
         {/* Main Grid: Left Column & Right Column */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          {/* Main Column (2 spans on desktop) */}
+          {/* Main Column (2 spans on desktop, rendered in user's sorted order) */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Priority Tasks */}
-            {isWidgetEnabled("tasks") && (
-              <DashboardTasks
-                tasks={pendingTasks}
-                onToggleComplete={handleToggleTask}
-              />
-            )}
-
-            {/* Active Projects */}
-            {isWidgetEnabled("projects") && (
-              <ActiveProjects projects={projects} />
-            )}
-
-            {/* Website SEO Snapshot */}
-            {isWidgetEnabled("websites") && INITIAL_WEBSITES[0] && (
-              <WebsitePerformance site={INITIAL_WEBSITES[0]} />
-            )}
+            {enabledMainWidgets.map((w) => renderWidget(w.id))}
           </div>
 
           {/* Side Column (1 span on desktop) */}
           <div className="space-y-6">
-            {/* Today's Schedule */}
-            {isWidgetEnabled("schedule") && (
-              <TodaySchedule initialEvents={INITIAL_SCHEDULE} />
-            )}
+            {enabledSideWidgets.map((w) => renderWidget(w.id))}
           </div>
         </div>
       </div>

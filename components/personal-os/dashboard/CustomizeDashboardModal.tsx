@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal } from "../ui/Modal";
 import type { DashboardWidgetConfig } from "@/lib/personal-os/models/dashboard";
 
@@ -19,7 +19,15 @@ export function CustomizeDashboardModal({
   onSave,
   onReset,
 }: CustomizeDashboardModalProps) {
-  const [widgets, setWidgets] = useState<DashboardWidgetConfig[]>(initialWidgets);
+  const [widgets, setWidgets] = useState<DashboardWidgetConfig[]>(() =>
+    [...initialWidgets].sort((a, b) => a.order - b.order)
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      setWidgets([...initialWidgets].sort((a, b) => a.order - b.order));
+    }
+  }, [isOpen, initialWidgets]);
 
   const toggleWidget = (id: string) => {
     setWidgets((prev) =>

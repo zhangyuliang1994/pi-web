@@ -163,6 +163,61 @@ export function updateStoredProject(id: string, updates: Partial<PersonalProject
   return updated;
 }
 
+export function deleteStoredProject(id: string, options: { deleteTasks?: boolean } = {}): void {
+  const current = getStoredProjects();
+  saveStoredProjects(current.filter(p => p.id !== id));
+
+  const tasks = getStoredTasks();
+  if (options.deleteTasks) {
+    saveStoredTasks(tasks.filter(t => t.projectId !== id));
+  } else {
+    // Unassign associated tasks without deleting them
+    let hasChanges = false;
+    const updatedTasks = tasks.map(t => {
+      if (t.projectId === id) {
+        hasChanges = true;
+        return { ...t, projectId: undefined, projectName: undefined };
+      }
+      return t;
+    });
+    if (hasChanges) {
+      saveStoredTasks(updatedTasks);
+    }
+  }
+}
+
+// ----------------- MACHINE-SPECIFIC WORKSPACE OVERRIDES -----------------
+
+const CWD_OVERRIDE_PREFIX = "personal_os_cwd_override_";
+
+export function getProjectInstanceCwd(projectId: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(`${CWD_OVERRIDE_PREFIX}${projectId}`);
+  } catch {
+    return null;
+  }
+}
+
+export function setProjectInstanceCwd(projectId: string, cwd: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (!cwd.trim()) {
+      localStorage.removeItem(`${CWD_OVERRIDE_PREFIX}${projectId}`);
+    } else {
+      localStorage.setItem(`${CWD_OVERRIDE_PREFIX}${projectId}`, cwd.trim());
+    }
+    notifyChange();
+  } catch (e) {
+    console.error("Failed to set project instance cwd:", e);
+  }
+}
+
+export function getEffectiveProjectCwd(project: PersonalProject): string | undefined {
+  const override = getProjectInstanceCwd(project.id);
+  return override || project.cwd;
+}
+
 // ----------------- DASHBOARD WIDGETS -----------------
 
 export function getStoredWidgets(): DashboardWidgetConfig[] {
@@ -173,7 +228,33 @@ export function getStoredWidgets(): DashboardWidgetConfig[] {
       localStorage.setItem(KEYS.WIDGETS, JSON.stringify(DEFAULT_DASHBOARD_WIDGETS));
       return DEFAULT_DASHBOARD_WIDGETS;
     }
-    return JSON.parse(raw) as DashboardWidgetConfig[];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return DEFAULT_DASHBOARD_WIDGETS;
+    }
+
+    const map = new Map<string, DashboardWidgetConfig>();
+    for (const w of parsed) {
+      if (w && typeof w.id === "string") {
+        map.set(w.id, {
+          id: w.id,
+          label: typeof w.label === "string" ? w.label : w.id,
+          enabled: Boolean(w.enabled),
+          order: typeof w.order === "number" ? w.order : 999,
+        });
+      }
+    }
+
+    // Ensure all default widgets exist in case schema was updated
+    for (const def of DEFAULT_DASHBOARD_WIDGETS) {
+      if (!map.has(def.id)) {
+        map.set(def.id, { ...def, order: map.size + 1 });
+      }
+    }
+
+    const merged = Array.from(map.values());
+    merged.sort((a, b) => a.order - b.order);
+    return merged;
   } catch (e) {
     console.warn("Failed to load widget config:", e);
     return DEFAULT_DASHBOARD_WIDGETS;
@@ -183,7 +264,8 @@ export function getStoredWidgets(): DashboardWidgetConfig[] {
 export function saveStoredWidgets(widgets: DashboardWidgetConfig[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(KEYS.WIDGETS, JSON.stringify(widgets));
+    const normalized = widgets.map((w, idx) => ({ ...w, order: idx + 1 }));
+    localStorage.setItem(KEYS.WIDGETS, JSON.stringify(normalized));
     notifyChange();
   } catch (e) {
     console.error("Failed to save widgets:", e);
@@ -195,7 +277,7 @@ export function resetStoredWidgets(): DashboardWidgetConfig[] {
     localStorage.setItem(KEYS.WIDGETS, JSON.stringify(DEFAULT_DASHBOARD_WIDGETS));
     notifyChange();
   }
-  return DEFAULT_DASHBOARD_WIDGETS;
+  return DEFAULT_DASHBOARD_WIDGETS.map((w, i) => ({ ...w, order: i + 1 }));
 }
 
 // ----------------- BRIEFING -----------------
@@ -235,3 +317,59 @@ export function resetPersonalOsData(): void {
     console.error("Failed to reset Personal OS data:", e);
   }
 }
+
+// ----------------- LIGHTWEIGHT REPOSITORY BOUNDARIES (FOR SPRING BOOT REST API) -----------------
+
+export interface PersonalTaskRepository {
+  getAll(): Promise<PersonalTask[]>;
+  create(task: Omit<PersonalTask, "id" | "createdAt" | "updatedAt">): Promise<PersonalTask>;
+  update(id: string, updates: Partial<PersonalTask>): Promise<PersonalTask | null>;
+  toggleComplete(id: string): Promise<PersonalTask | null>;
+  delete(id: string): Promise<void>;
+}
+
+export interface PersonalProjectRepository {
+  getAll(): Promise<PersonalProject[]>;
+  create(project: Omit<PersonalProject, "id" | "createdAt" | "updatedAt">): Promise<PersonalProject>;
+  update(id: string, updates: Partial<PersonalProject>): Promise<PersonalProject | null>;
+  delete(id: string, options?: { deleteTasks?: boolean }): Promise<void>;
+}
+
+/**
+ * Default local storage implementation of repositories.
+ * In V1.1, these can be swapped to RestTaskRepository / RestProjectRepository
+ * backed by the Spring Boot backend without changing any UI consumer.
+ */
+export const localTaskRepository: PersonalTaskRepository = {
+  async getAll() {
+    return getStoredTasks();
+  },
+  async create(task) {
+    return addStoredTask(task);
+  },
+  async update(id, updates) {
+    return updateStoredTask(id, updates);
+  },
+  async toggleComplete(id) {
+    return toggleStoredTaskComplete(id);
+  },
+  async delete(id) {
+    deleteStoredTask(id);
+  },
+};
+
+export const localProjectRepository: PersonalProjectRepository = {
+  async getAll() {
+    return getStoredProjects();
+  },
+  async create(project) {
+    return addStoredProject(project);
+  },
+  async update(id, updates) {
+    return updateStoredProject(id, updates);
+  },
+  async delete(id, options) {
+    deleteStoredProject(id, options);
+  },
+};
+

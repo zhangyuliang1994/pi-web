@@ -215,6 +215,8 @@ export interface UseAgentSessionOptions {
   initialNewSessionChoices?: NewSessionChoices | null;
   /** A fresh composer reports its own model and reasoning picks, on mount and as they change. */
   onNewSessionChoicesChange?: (choices: NewSessionChoices) => void;
+  /** Active session or fresh composer reports real runtime model and thinking level. */
+  onRuntimeModelChange?: (model: { provider: string; modelId: string } | null, thinkingLevel: string | null) => void;
 }
 
 export type ThinkingLevelOption = "auto" | "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
@@ -607,6 +609,15 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
   const displayThinkingLevel = isNew
     ? (newSessionThinkingLevel ?? newSessionDefaultThinkingLevel)
     : currentThinkingLevel ?? (data?.context.messages.length === 0 ? newSessionDefaultThinkingLevel : null);
+
+  const onRuntimeModelChange = opts.onRuntimeModelChange;
+  useEffect(() => {
+    onRuntimeModelChange?.(
+      displayModel ? { provider: displayModel.provider, modelId: displayModel.modelId } : null,
+      displayThinkingLevel ? String(displayThinkingLevel) : null,
+    );
+  }, [displayModel, displayThinkingLevel, onRuntimeModelChange]);
+
   const composerDraftKey = session?.id ?? newSessionDraftKey ?? undefined;
 
   const syncLiveModel = useCallback((state?: AgentStateResponse) => {

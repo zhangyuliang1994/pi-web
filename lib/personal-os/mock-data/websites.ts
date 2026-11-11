@@ -32,7 +32,7 @@ export const INITIAL_WEBSITES: WebsiteProperty[] = [
     id: "site-uplink-plans",
     domain: "UplinkPlans.com",
     name: "UplinkPlans",
-    syncStatus: "connected",
+    syncStatus: "demo",
     lastSyncedAt: "Today at 07:45 AM",
     metrics: {
       "7d": {
@@ -101,7 +101,7 @@ export const INITIAL_WEBSITES: WebsiteProperty[] = [
     id: "site-satcom-index",
     domain: "SatcomIndex.com",
     name: "SatcomIndex",
-    syncStatus: "connected",
+    syncStatus: "demo",
     lastSyncedAt: "Yesterday at 11:30 PM",
     metrics: {
       "7d": {
@@ -164,7 +164,7 @@ export const INITIAL_WEBSITES: WebsiteProperty[] = [
     id: "site-cup-cities",
     domain: "CupCities.com",
     name: "CupCities",
-    syncStatus: "connected",
+    syncStatus: "demo",
     lastSyncedAt: "Today at 06:15 AM",
     metrics: {
       "7d": {

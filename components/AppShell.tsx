@@ -217,6 +217,12 @@ export function AppShell() {
     newSessionChoicesRef.current = choices;
     setCarriedNewSessionChoices(null);
   }, []);
+  const [runtimeModel, setRuntimeModel] = useState<{ provider: string; modelId: string } | null>(null);
+  const [runtimeThinkingLevel, setRuntimeThinkingLevel] = useState<string | null>(null);
+  const handleRuntimeModelChange = useCallback((model: { provider: string; modelId: string } | null, thinking: string | null) => {
+    setRuntimeModel(model);
+    setRuntimeThinkingLevel(thinking);
+  }, []);
   const [initialCwdStatus, setInitialCwdStatus] = useState<"idle" | "validating" | "ready" | "error">(
     () => initialNavigation.requestedCwd ? "validating" : "idle",
   );
@@ -2702,6 +2708,7 @@ export function AppShell() {
               newSessionContextBar={newSessionContextBar}
               initialNewSessionChoices={selectedSession === null ? carriedNewSessionChoices : null}
               onNewSessionChoicesChange={handleNewSessionChoicesChange}
+              onRuntimeModelChange={handleRuntimeModelChange}
               onAgentEnd={handleAgentEnd}
               onToolEnd={handleToolEnd}
               onAttentionNeeded={handleAttentionNeeded}
@@ -2920,8 +2927,9 @@ export function AppShell() {
       sessionId={selectedSession?.id}
       sessionTitle={selectedSession?.name || selectedSession?.firstMessage || "New Agent Conversation"}
       cwd={activeCwd}
-      modelId={carriedNewSessionChoices?.model?.modelId ?? null}
-      thinkingLevel={carriedNewSessionChoices?.thinkingLevel ?? null}
+      modelId={runtimeModel?.modelId ?? carriedNewSessionChoices?.model?.modelId ?? null}
+      modelProvider={runtimeModel?.provider ?? carriedNewSessionChoices?.model?.provider ?? null}
+      thinkingLevel={runtimeThinkingLevel ?? carriedNewSessionChoices?.thinkingLevel ?? null}
       onOpenSettings={() => setSettingsSection("models")}
     />
     {settingsSection && (

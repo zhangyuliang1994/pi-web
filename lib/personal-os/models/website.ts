@@ -1,6 +1,6 @@
 export type DateRangeOption = "7d" | "28d" | "3m";
 
-export type GscSyncStatus = "not_connected" | "loading" | "connected" | "sync_failed";
+export type GscSyncStatus = "not_connected" | "demo" | "loading" | "connected" | "sync_failed";
 
 export interface WebsiteDayMetric {
   date: string; // YYYY-MM-DD

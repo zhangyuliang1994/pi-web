@@ -62,7 +62,7 @@ export function AiDailyBriefing({ initialData, onDismiss }: AiDailyBriefingProps
             AI Daily Briefing
           </span>
           <Badge variant="primary" size="sm">
-            Demo
+            Demo Briefing
           </Badge>
           {data.generatedAt && (
             <span className="text-[11px] text-zinc-400 hidden sm:inline">• {data.generatedAt}</span>
@@ -152,8 +152,9 @@ export function AiDailyBriefing({ initialData, onDismiss }: AiDailyBriefingProps
               type="button"
               onClick={handleAskAi}
               className="px-3 py-1.5 rounded-lg bg-[#4338CA] dark:bg-[#6366F1] text-white text-xs font-medium hover:opacity-95 shadow-2xs transition-opacity"
+              title="Opens Pi Agent workspace"
             >
-              Ask AI Assistant
+              Open AI Assistant
             </button>
             <button
               type="button"

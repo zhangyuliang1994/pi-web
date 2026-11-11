@@ -9,6 +9,8 @@ import { PlusIcon, SearchIcon, GridIcon, ListIcon } from "@/components/personal-
 import {
   getStoredProjects,
   addStoredProject,
+  updateStoredProject,
+  deleteStoredProject,
   getStoredTasks,
   toggleStoredTaskComplete,
   subscribeToPersonalOsStorage,
@@ -44,6 +46,18 @@ export default function ProjectsPage() {
   ) => {
     addStoredProject(newProj);
     loadData();
+  };
+
+  const handleUpdateProject = (id: string, updates: Partial<PersonalProject>) => {
+    updateStoredProject(id, updates);
+    loadData();
+    setSelectedProject((prev) => (prev && prev.id === id ? { ...prev, ...updates } : prev));
+  };
+
+  const handleDeleteProject = (id: string, options: { deleteTasks?: boolean }) => {
+    deleteStoredProject(id, options);
+    loadData();
+    setSelectedProject(null);
   };
 
   const handleToggleTask = (taskId: string) => {
@@ -212,6 +226,8 @@ export default function ProjectsPage() {
         project={selectedProject}
         tasks={tasks}
         onToggleTaskComplete={handleToggleTask}
+        onUpdateProject={handleUpdateProject}
+        onDeleteProject={handleDeleteProject}
       />
     </PersonalOsLayout>
   );

@@ -27,13 +27,13 @@ export function WebsitesHeader({
 
   const handleSyncClick = () => {
     setSyncing(true);
-    setSyncMessage("Syncing Google Search Console (Simulated Demo)...");
+    setSyncMessage("Notice: Real Google Search Console OAuth is scheduled for V1.1. Refreshing local demo dataset...");
     setTimeout(() => {
       setSyncing(false);
-      setSyncMessage("Data is up-to-date (Demo cache refreshed).");
+      setSyncMessage("Demo dataset refreshed (Static sample metrics). Real GSC API sync is not connected.");
       onSync();
-      setTimeout(() => setSyncMessage(null), 3000);
-    }, 1000);
+      setTimeout(() => setSyncMessage(null), 4000);
+    }, 800);
   };
 
   const ranges: { id: DateRangeOption; label: string }[] = [
@@ -68,9 +68,9 @@ export function WebsitesHeader({
           </div>
 
           <div className="flex items-center gap-2 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
             <span className="text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
-              GSC Connected • {selectedProperty.lastSyncedAt || "Synced"}
+              GSC Not Connected • Demo Mode
             </span>
             <Badge variant="primary" size="sm">
               Demo Data

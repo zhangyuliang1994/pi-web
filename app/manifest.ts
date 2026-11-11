@@ -3,12 +3,12 @@ import type { MetadataRoute } from "next";
 export const dynamic = "force-dynamic";
 
 export default function manifest(): MetadataRoute.Manifest {
-  const appName = process.env.PI_WEB_APP_NAME?.trim() || "Pi Web";
+  const appName = process.env.PI_WEB_APP_NAME?.trim() || "Personal OS";
   return {
     id: "/",
     name: appName,
     short_name: appName,
-    description: "Local web interface for the pi coding agent",
+    description: "Personal OS — One place to manage your digital life",
     start_url: "/",
     scope: "/",
     display: "standalone",
